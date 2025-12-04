@@ -1,8 +1,8 @@
 #![no_std]
 #![no_main]
 
-use stark_os::{memory::mem::translate_addr, print, println};
-use x86_64::{VirtAddr, structures::paging::PageTable};
+use stark_os::{memory::mem, print, println};
+use x86_64::{VirtAddr, structures::paging::Translate};
 use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
 
@@ -30,11 +30,13 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         boot_info.physical_memory_offset
     ];
 
+    let mapper = unsafe {
+        mem::init(phy_mem_offset)
+    };
+
     for &address in &addresses {
         let virt = VirtAddr::new(address);
-        let phys = unsafe {
-            translate_addr(virt, phy_mem_offset)
-        };
+        let phys = mapper.translate_addr(virt);
         println!("{:?} -> {:?}",virt,phys);
     }
    
