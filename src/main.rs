@@ -2,7 +2,7 @@
 #![no_main]
 
 use stark_os::{memory::mem, print, println};
-use x86_64::{VirtAddr, structures::paging::Translate};
+use x86_64::{VirtAddr, structures::paging::{Page, Translate}};
 use core::panic::PanicInfo;
 use bootloader::{BootInfo, entry_point};
 
@@ -30,8 +30,17 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         boot_info.physical_memory_offset
     ];
 
-    let mapper = unsafe {
+    let mut mapper = unsafe {
         mem::init(phy_mem_offset)
+    };
+    let mut frame_allocator = mem::EmptyFrameAllocator;
+
+    let page = Page::containing_address(VirtAddr::new(0));
+    mem::create_test_mapping(page, &mut mapper, &mut frame_allocator);
+
+    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+    unsafe {
+        page_ptr.offset(400).write_volatile(0x_0b21_0b77_0b65_0b4e)
     };
 
     for &address in &addresses {
