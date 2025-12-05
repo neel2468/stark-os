@@ -19,7 +19,7 @@ fn panic(info: &PanicInfo) -> ! {
 
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     stark_os::init();
-    println!("Hello World{}", "!");
+    println!("Stark OS v1.0{}", "!");
 
     let phy_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
 
